@@ -1,0 +1,10 @@
+.idea/
+.vs/
+.pk
+.pem
+.pub
+.env_prod
+temp/
+node_modules
+.env
+.DS_Store
