@@ -112,7 +112,7 @@ class RedditPost {
         return stripped;
     }
     /**
-     * Static function to converts Reddit's Markdown to html string
+     *  Function to converts Reddit's Markdown to html string
      * @param {String} text markdown text
      * @returns {String} html version
      */
