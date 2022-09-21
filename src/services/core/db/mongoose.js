@@ -2,8 +2,8 @@
 
 const config = require('../../../config')
 const mongoose = require('mongoose')
-const ora = require('ora');
-const mongoThrobber = ora()
+const Throbber = require('../../../helpers/throbber')
+const mongoThrobber = Throbber.init()
 
 mongoose.Promise = require('bluebird')
 
@@ -25,7 +25,7 @@ mongoose.connection.on('error', (err) => {
 // }
 exports.connect = () => {
 
-  mongoThrobber.start()
+  mongoThrobber.init()
   var mongoURI = config.env === 'production' || config.env === 'production-sandbox' ? config.mongo.uri : config.env === 'staging' ? config.mongo.stagingURI : config.mongo.testURI
   return new Promise((resolve, reject) => {
     mongoose.connect(mongoURI, {

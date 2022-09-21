@@ -7,13 +7,12 @@ const bodyParser = require('body-parser')
 const errorHandler = require('../../middlewares/error-handler')
 const apiRouter = require('../../routes/api')
 const cookieParser = require('cookie-parser');
+const Throbber = require('../../helpers/throbber');
 const http = require('http');
-const ora = require('ora');
 const SentryIO = require('../../services/utils/sentry')
-
 const Sentry = new SentryIO()
 const app = express()
-const appStartThrobber = ora();
+const appStartThrobber = Throbber.init();
 
 const allowedDevOrigins = [
 	'http://localhost:2000',

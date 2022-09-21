@@ -11,7 +11,7 @@ class Throbber {
     }
     /**
      * Initializes with a message of your choice
-     * @param {String} msg message you want to display
+     * @param {String | undefined} msg message you want to display
      */
     init(msg){
         let done = msg ? this.#appStartThrobber.start(msg) : this.#appStartThrobber.start();
