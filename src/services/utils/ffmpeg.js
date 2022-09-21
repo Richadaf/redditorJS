@@ -14,7 +14,7 @@ class FFMPEG {
     /**
      * Stores the final video that has merged from single clips
      */
-    #mergedVideo = false;
+    #finalVideo = false;
 
     constructor() {
     }
@@ -64,8 +64,8 @@ class FFMPEG {
                     childProcess.uptime = message.uptime;
                     childProcess.lastActive = message.lastActive;
                 }
-                this.#mergedVideo = message && message.mergedVideo ? message.mergedVideo : false
-                return this.#mergedVideo;
+                this.#finalVideo = message && message.finalVideo ? message.finalVideo : false
+                return this.#finalVideo;
             });
             let msg = { action: 'mergeVideos', videoURLs: videos, filename: filename }
             childProcess.send(msg)
@@ -77,10 +77,10 @@ class FFMPEG {
     }
     /**
      * Gets the url for the merged video
-     * @return {URL | Boolean} URL to mergedVideo. False if not merged yet
+     * @return {URL | Boolean} URL to finalVideo. False if not merged yet
      */
-    getMergedVideo() {
-        return this.#mergedVideo;
+    getFinalVideo() {
+        return this.#finalVideo;
     }
 }
 

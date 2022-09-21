@@ -48,13 +48,14 @@ module.exports = {
     Imager: new Imager(1920, 1080, 'black'),
     /**
      * Save Image to file
+     * @async
      * @param {Object} image Image instance you want to save to file
      * @param {String} name What do you want to name the file? No extensions
      * @param {String} path Where do you want it to save?
-     * @returns {Object} ImageBuffer
+     * @returns {Promise<Object>} ImageBuffer
      */
     Save: async (image, name, path) => {
-        let file = path + name + `.${image.getExtension()}`
+        let file = path + name
         return await image.write(file)
     }
 };

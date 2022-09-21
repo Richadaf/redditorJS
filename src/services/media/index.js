@@ -1,7 +1,9 @@
+const config = require('../../config')
 let lastActive = Date.now();
 let videoBot;
 let { exec } = require('child_process');
-const exportPath = './output/videos/';
+const exportPathVideo = config.exportPathVideo;
+const exportPathImage = config.exportPathImage;
 /**
  * Class that has the commands that runs the video editing
  * @see FFMPEG
@@ -34,10 +36,11 @@ class VideoBot {
         //Exec takes memory because it's buffering the data not streaming.
         //Also avoid exec if you're using user input to run the command line because of command injection attack
         //Cannot handle interactive shell so it'll hold if the file already exist.
-        let outputURL = exportPath + filename + '.mkv';
+        let outputURL = exportPathVideo + filename;
+        let imageURL = exportPathImage + image;
         let msg;
         //TODO: THROBBER ("Scanning comments")
-        exec(`ffmpeg -loop 1 -i ${image} -i ${audio} -shortest -acodec copy -vcodec mjpeg ${outputURL}`, (err, stdout, stderr) => {
+        exec(`ffmpeg -loop 1 -i ${imageURL} -i ${audio} -shortest -acodec copy -vcodec mjpeg ${outputURL}`, (err, stdout, stderr) => {
             if (err) {
                 console.log("ERR", err);
                 process.send({ err: err })
@@ -93,7 +96,7 @@ class VideoBot {
             ph++;
         }
         command += `concat=n=${videoURLs.length}:v=1:a=1[outv][outa]\" \\`
-        command += `-map \"[outv]\" -map \"[outa]\" ${exportPath + filename + defaultExtension}`
+        command += `-map \"[outv]\" -map \"[outa]\" ${exportPathVideo + filename + defaultExtension}`
         let msg;
 
         //TODO: THROBBER ("Making video")
@@ -103,7 +106,7 @@ class VideoBot {
                 process.send({ err: err })
                 return;
             }
-            msg = { mergedVideo: `${exportPath + filename}`, uptime: this.getProcessUptime(), lastActive: Date.now() }
+            msg = { mergedVideo: `${exportPathVideo + filename}`, uptime: this.getProcessUptime(), lastActive: Date.now() }
             console.log("Merged Video at ", msg.mergedVideo + defaultExtension)
             process.send(msg)
             return;

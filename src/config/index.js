@@ -15,4 +15,10 @@ module.exports = {
         testKeysURI: process.env.MONGOTESTKEYSURI,
         db: process.env.MONGODB
     },
+    exportPathVideo: process.env.EXPORT_PATH_VIDEO,
+    exportPathAudio: process.env.EXPORT_PATH_AUDIO,
+    exportPathImage: process.env.EXPORT_PATH_IMAGE,
+    defaultAudioExtension: process.env.DEFAULT_AUDIO_EXTENSION,
+    defaultVideoExtension: process.env.DEFAULT_VIDEO_EXTENSION,
+    defaultImageExtension: process.env.DEFAULT_IMAGE_EXTENSION,
 };

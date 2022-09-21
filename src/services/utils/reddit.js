@@ -14,13 +14,14 @@ class RedditPost {
 
     /**
      * Grabs the post and comments from reddit
+     * @async
      * @param {URL} url reddit url to work with
-     * @returns {RedditPost} updated instance to work with. Returns null if error
+     * @returns {Promise<RedditPost> | Promise<Error>} updated instance to work with. Returns Error instance if error
      */
     async init(url) {
         let data = new Promise((resolve) => {
-            request({ url: url, json: true }, (err, res, body) => {
-                if (err) resolve(null);
+            request({ url: url, json: true, timeout: 2 * 60 * 1000 }, (err, res, body) => {
+                if (err) resolve(new Error(err));
                 else {
                     body = typeof body === 'string' ? JSON.parse(body) : body;
                     //We need posts and comments to only contain information we need for this project's scope. 
@@ -50,7 +51,7 @@ class RedditPost {
     }
     /**
      * Returns comments from the reddit post initialized.
-     * @returns {[Object]} All comments from the reddit post
+     * @returns {[{author:String, score:Number, body:String}]} All comments from the reddit post
      */
     getComments() {
         if (!this.#hasInit) return false;
