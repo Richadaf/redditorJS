@@ -39,7 +39,6 @@ class VideoBot {
         let outputURL = exportPathVideo + filename;
         let imageURL = exportPathImage + image;
         let msg;
-        //TODO: THROBBER ("Scanning comments")
         exec(`ffmpeg -loop 1 -i ${imageURL} -i ${audio} -shortest -acodec copy -vcodec mjpeg ${outputURL}`, (err, stdout, stderr) => {
             if (err) {
                 console.log("ERR", err);
@@ -50,7 +49,6 @@ class VideoBot {
             process.send(msg)
             return;
         });
-        //TODO: SUCCESS THROBBER ("Finished Scanning comments");
         return;
     }
 
@@ -98,8 +96,6 @@ class VideoBot {
         command += `concat=n=${videoURLs.length}:v=1:a=1[outv][outa]\" \\`
         command += `-map \"[outv]\" -map \"[outa]\" ${exportPathVideo + filename + defaultExtension}`
         let msg;
-
-        //TODO: THROBBER ("Making video")
         exec(command, (err, stdout, stderr) => {
             if (err) {
                 console.log("ERR", err);
@@ -107,11 +103,9 @@ class VideoBot {
                 return;
             }
             msg = { mergedVideo: `${exportPathVideo + filename}`, uptime: this.getProcessUptime(), lastActive: Date.now() }
-            console.log("Merged Video at ", msg.mergedVideo + defaultExtension)
             process.send(msg)
             return;
         });
-        //TODO: SUCCESS THROBBER ("Finished Creating video")
         return;
     }
 }
@@ -133,7 +127,7 @@ process.on('message', async (msg) => {
  * @returns void
  */
 function joinAudioToImageHandler(msg) {
-    const { image, audio, filename } = msg
+    const { image, audio, filename } = msg;
     videoBot = new VideoBot(msg);
     videoBot.makeVideoFromImage(image, audio, filename);
 }

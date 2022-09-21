@@ -1,4 +1,5 @@
-let { fork } = require('child_process');
+const { fork } = require('child_process');
+const Throbber = require('../../helpers/throbber')
 /**
  * Helper class for interacting with FFMPEG that is working in a child process
  */
@@ -26,6 +27,7 @@ class FFMPEG {
      * @returns {URL | Boolean} url to the finished product, or false if there's an error
      */
     joinImageAndAudio(image, audio, filename) {
+        Throbber.init('MAKING SINGLE COMMENT VIDEO :', filename)
         try {
             const childProcess = fork('./src/services/media');
             childProcess.uptime = 0;
@@ -37,11 +39,13 @@ class FFMPEG {
                 }
                 this.#videoURL = message && message.video ? message.video : false
                 if (this.#videoURL !== false) this.#videoURLS.push(this.#videoURL);
+                Throbber.succeed('FINISHED MAKING SINGLE VIDEO :' + filename)
                 return this.#videoURL;
             });
-            let msg = { action: 'joinAudioToImage', image: image, audio: audio, filename: filename }
+            let msg = { action: 'joinAudioToImage', image: image, audio: audio, filename: filename, throbber: Throbber }
             childProcess.send(msg)
         } catch (err) {
+            Throbber.fail('FAILED MAKING SINGLE COMMENT VIDEO :', filename)
             console.log('====================================');
             console.log("MAJOR ERROR", err);
             console.log('====================================');
@@ -54,7 +58,7 @@ class FFMPEG {
      * @param {URL} filename What do you want to name the file? (No Extensions)
      */
     mergeVideos(videos, filename) {
-        //TODO:remove extensions from filename if present. Is it a priority task tho?
+        Throbber.init('MERGING VIDEOS TO : ' + filename)
         try {
             const childProcess = fork('./src/services/media');
             childProcess.uptime = 0;
@@ -65,11 +69,13 @@ class FFMPEG {
                     childProcess.lastActive = message.lastActive;
                 }
                 this.#finalVideo = message && message.finalVideo ? message.finalVideo : false
+                Throbber.succeed('MERGED VIDEOS TO : ' + filename)
                 return this.#finalVideo;
             });
             let msg = { action: 'mergeVideos', videoURLs: videos, filename: filename }
             childProcess.send(msg)
         } catch (err) {
+            Throbber.fail('FAILED TO MERGE TO ' + filename)
             console.log('====================================');
             console.log("MAJOR ERROR", err);
             console.log('====================================');

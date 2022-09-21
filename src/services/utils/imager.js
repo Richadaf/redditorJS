@@ -1,4 +1,5 @@
 const Jimp = require('jimp')
+const Throbber = require('../../helpers/throbber')
 
 class Imager {
     #image = null;
@@ -19,6 +20,7 @@ class Imager {
      * @returns {Object} image with text overlay
      */
     async write(text) {
+        Throbber.init('WRITING TEXT TO IMAGE')
         const WRITE_X_LOCATION = 0.1 * this.#imageWidth; //Start writing at 1% right
         const WRITE_Y_LOCATION = 0
         let loadFont = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE)
@@ -28,11 +30,13 @@ class Imager {
                 alignmentX: Jimp.HORIZONTAL_ALIGN_LEFT,
                 alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE
             },
-                this.#imageWidth - (0.2 * this.#imageWidth), // Stop writing at 2% less than image width
-                this.#imageHeight
+            this.#imageWidth - (0.2 * this.#imageWidth), // Stop writing at 2% less than image width
+            this.#imageHeight - (0.2 * this.#imageHeight)
             );
+            Throbber.succeed('WRITTEN TEXT TO IMAGE')
             return textOverImage;
         }
+        Throbber.fail('FAILED TO WRITE TEXT TO IMAGE')
         return null;
     }
     /**

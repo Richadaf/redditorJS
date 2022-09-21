@@ -44,8 +44,7 @@ setTimeout(async () => {
     let videosToJoin = [];
     let commentsVideoPaths = fs.readdirSync(exportPathVideo);
     for (const path of commentsVideoPaths) videosToJoin.push('' + exportPathVideo + path);
-    FFMPEG.mergeVideos(videosToJoin, 'what-life-changing-item-can-you-buy-for-less-than')
-    console.log("merge video logged", FFMPEG.getFinalVideo());
+    FFMPEG.mergeVideos(videosToJoin, 'final-video')
 }, 2000)
 // REDDITOR_MONGO_DB.connect()
 setTimeout(async () => {
@@ -54,3 +53,5 @@ setTimeout(async () => {
 }, 2000)
 
 module.exports = REDDITOR
+
+//TODO: Sentry Errors logging together with console logging would be nice unno.
