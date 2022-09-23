@@ -14,9 +14,13 @@ class Throbber {
      * @param {String | undefined} msg message you want to display
      */
     init(msg){
+        //You should not be exposing ORA
         let done = msg ? this.#appStartThrobber.start(msg) : this.#appStartThrobber.start();
     }
 
+    /**
+     * Starts with message 
+     */
     /**
      * Displays a YES/SUCCESS message 
      * @param {String} msg message to display

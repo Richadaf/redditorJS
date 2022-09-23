@@ -13,7 +13,7 @@ class FFMPEG {
      */
     #videoURLS = []
     /**
-     * Stores the final video that has merged from single clips
+     * Stores the final video that has merged from single clips as a url 
      */
     #finalVideo = false;
 
@@ -39,10 +39,9 @@ class FFMPEG {
                 }
                 this.#videoURL = message && message.video ? message.video : false
                 if (this.#videoURL !== false) this.#videoURLS.push(this.#videoURL);
-                Throbber.succeed('FINISHED MAKING SINGLE VIDEO :' + filename)
                 return this.#videoURL;
             });
-            let msg = { action: 'joinAudioToImage', image: image, audio: audio, filename: filename, throbber: Throbber }
+            let msg = { action: 'joinAudioToImage', image: image, audio: audio, filename: filename, Throbber: Throbber }
             childProcess.send(msg)
         } catch (err) {
             Throbber.fail('FAILED MAKING SINGLE COMMENT VIDEO :', filename)
@@ -56,6 +55,7 @@ class FFMPEG {
      * Merges a bunch of videos together as one. 
      * @param {[URL]} videos filepath to each video you want to merge
      * @param {URL} filename What do you want to name the file? (No Extensions)
+     * @returns {URL} url for final merged video
      */
     mergeVideos(videos, filename) {
         Throbber.init('MERGING VIDEOS TO : ' + filename)
@@ -69,10 +69,9 @@ class FFMPEG {
                     childProcess.lastActive = message.lastActive;
                 }
                 this.#finalVideo = message && message.finalVideo ? message.finalVideo : false
-                Throbber.succeed('MERGED VIDEOS TO : ' + filename)
                 return this.#finalVideo;
             });
-            let msg = { action: 'mergeVideos', videoURLs: videos, filename: filename }
+            let msg = { action: 'mergeVideos', videoURLs: videos, filename: filename, Throbber: Throbber }
             childProcess.send(msg)
         } catch (err) {
             Throbber.fail('FAILED TO MERGE TO ' + filename)

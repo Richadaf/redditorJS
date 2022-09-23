@@ -7,12 +7,11 @@ const bodyParser = require('body-parser')
 const errorHandler = require('../../middlewares/error-handler')
 const apiRouter = require('../../routes/api')
 const cookieParser = require('cookie-parser');
-const Throbber = require('../../helpers/throbber');
 const http = require('http');
 const SentryIO = require('../../services/utils/sentry')
+const Throbber = require('../../helpers/throbber');
 const Sentry = new SentryIO()
 const app = express()
-const appStartThrobber = Throbber.init();
 
 const allowedDevOrigins = [
 	'http://localhost:2000',
@@ -104,10 +103,10 @@ const server = http.createServer(app)
 exports.init = async () => {
 	server.listen(config.port, async (err) => {
 		if (err) {
-			appStartThrobber.fail(`Error : ${err}`)
+			Throbber.fail(`Error : ${err}`)
 			process.exit(-1)
 		}
-		appStartThrobber.succeed(`${config.app.toUpperCase()} Ready!`)
+		Throbber.succeed(`${config.app.toUpperCase()} Ready!`)
 	})
 }
 exports.app = app

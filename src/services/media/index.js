@@ -32,7 +32,8 @@ class VideoBot {
      * @param {String} filename What do you want to name the video that it makes?
      * @returns void
      */
-    makeVideoFromImage(image, audio, filename) {
+    makeVideoFromImage(payload) {
+        const { image, audio, filename, Throbber } = payload
         //Exec takes memory because it's buffering the data not streaming.
         //Also avoid exec if you're using user input to run the command line because of command injection attack
         //Cannot handle interactive shell so it'll hold if the file already exist.
@@ -46,6 +47,10 @@ class VideoBot {
                 return;
             }
             msg = { video: `${outputURL}`, uptime: this.getProcessUptime(), lastActive: Date.now() }
+            console.log('====================================');
+            console.log("THIS IS THROBBER", Throbber);
+            console.log('====================================');
+            Throbber.succeed('FINISHED MAKING SINGLE VIDEO :' + filename)
             process.send(msg)
             return;
         });
@@ -76,7 +81,7 @@ class VideoBot {
     //Complexity here man n^2 already
     //most likely also use more memory than usual
     mergeVideos(payload) {
-        const { videoURLs, filename } = payload;
+        const { videoURLs, filename, Throbber } = payload;
         let command = 'ffmpeg '
         let inputFiles = '';
         let defaultExtension = '.mkv'
@@ -102,7 +107,8 @@ class VideoBot {
                 process.send({ err: err })
                 return;
             }
-            msg = { mergedVideo: `${exportPathVideo + filename}`, uptime: this.getProcessUptime(), lastActive: Date.now() }
+            msg = { finalVideo: `${exportPathVideo + filename}`, uptime: this.getProcessUptime(), lastActive: Date.now() }
+            Throbber.succeed('FINISHED MERGING VIDEO :' + filename)
             process.send(msg)
             return;
         });
@@ -127,9 +133,9 @@ process.on('message', async (msg) => {
  * @returns void
  */
 function joinAudioToImageHandler(msg) {
-    const { image, audio, filename } = msg;
+    const { image, audio, filename, Throbber } = msg;
     videoBot = new VideoBot(msg);
-    videoBot.makeVideoFromImage(image, audio, filename);
+    videoBot.makeVideoFromImage(msg);
 }
 
 /**

@@ -33,6 +33,10 @@ class RedditPost {
                         let { author, score, body } = child.data
                         return { author, score, body }
                     }));
+                    //TODO: REMOVE THESE COMMENTS
+                    console.log(":::::::::::::::");
+                    console.log("GOT HERE");
+                    console.log(":::::::::::::::");
                     this.setHasInit(true);
                     Throbber.succeed(`GRABBED POST AND COMMENTS FOR ` + url);
                     resolve(this)
@@ -54,7 +58,7 @@ class RedditPost {
     }
     /**
      * Returns comments from the reddit post initialized.
-     * @returns {[{author:String, score:Number, body:String}]} All comments from the reddit post
+     * @returns {[{author:String, score:Number, body:String}] | Boolean} All comments from the reddit post. Returns false if hasn't init.
      */
     getComments() {
         if (!this.#hasInit) return false;
@@ -72,7 +76,7 @@ class RedditPost {
     }
     /**
      * Gets post from the reddit post initialized.
-     * @returns {Object} Details on the reddit post.
+     * @returns {Object | Boolean} Details on the reddit post. Returns false if hasn't init.
      */
     getPost() {
         if (!this.#hasInit) return false;

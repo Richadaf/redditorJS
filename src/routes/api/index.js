@@ -1,7 +1,8 @@
 'use strict'
 const express = require('express')
 const router = express.Router()
-const redditRoute = require('./reddit.route')
+const redditorController = require('../../controllers/redditor.controller')
 
-router.use('/r', redditRoute)
+router.use('/create', redditorController.getContent)
+
 module.exports = router
