@@ -1,4 +1,4 @@
-# redditor-api
+# Redditor API
 
 ## Installation
 

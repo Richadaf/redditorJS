@@ -21,4 +21,9 @@ module.exports = {
     defaultAudioExtension: process.env.DEFAULT_AUDIO_EXTENSION,
     defaultVideoExtension: process.env.DEFAULT_VIDEO_EXTENSION,
     defaultImageExtension: process.env.DEFAULT_IMAGE_EXTENSION,
+    defaultCommentCount: 5,
+    defaultFileNameLength: 16,
+    defaultContentWidth: 1920,
+    defaultContentHeight: 1080,
+    defaultContentColor: '1c1c1c'
 };

@@ -1,0 +1,62 @@
+{
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": [
+      "jsdoc"
+    ]
+  },
+  "source": {
+    "include": [
+      "package.json",
+      "README.md"
+    ],
+    "includePattern": ".js$",
+    "excludePattern": "(node_modules/|docs)"
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": true,
+    "useLongnameInNav": false,
+    "showInheritedInNav": true
+  },
+  "opts": {
+    "encoding": "utf8",
+    "readme": "./README.md",
+    "destination": "docs/",
+    "recurse": true,
+    "verbose": true,
+    "template": "./node_modules/clean-jsdoc-theme",
+    "theme_opts": {
+      "default_theme": "light",
+      "base_url": "https://REDDITOR_DOCS_BASE_URL.me/",
+      "favicon": "PATH_TO_FAVICON_IMAGE",
+      "homepageTitle": "Redditor Docs",
+      "search": "false",
+      "footer": "Created with ❤️, Richard A. Famoroti",
+      "menu": [
+        {
+          "title": "Github",
+          "link": "https://github.com/Richadaf/redditorJS/",
+          "target": "_blank",
+          "class": "some-class",
+          "id": "some-id"
+        },
+        {
+          "title": "Contact Me",
+          "link": "mailto:richardfamoroti@gmail.com",
+          "target": "_blank",
+          "class": "some-class",
+          "id": "some-id"
+        }
+      ]
+
+    }
+  },
+  "markdown": {
+    "hardwrap": false,
+    "idInHeadings": true 
+  }
+}

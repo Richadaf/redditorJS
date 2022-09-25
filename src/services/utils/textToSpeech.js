@@ -4,15 +4,30 @@ const util = require('util');
 const Throbber = require('../../helpers/throbber');
 /**
  * Text to Speech class
+ * @protected
+ * @class
  */
 class TextToSpeech {
+    /**
+     * @private
+     * @member
+     * External tool that processes commands for us.
+     */
     #client = null;
-
+    /**
+     * Initializes internal services
+     * @constructor
+     * @memberof MixedRealityTools
+     */
     constructor() {
         this.#client = new textToSpeech.TextToSpeechClient();
     }
     /**
      * Convert text to speech
+     * @public
+     * @async
+     * @function
+     * @memberof MixedRealityTools
      * @param {String} text What you want the system to say
      * @returns Buffer with binary audio
      */
@@ -29,6 +44,10 @@ class TextToSpeech {
     }
     /**
      * Save binary audio to file
+     * @public
+     * @async
+     * @function
+     * @memberof MixedRealityTools
      * @param {*} filename What are you naming the file (Add extension)
      * @param {*} binaryAudio BinaryAudio you want to save
      */

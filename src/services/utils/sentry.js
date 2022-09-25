@@ -1,7 +1,18 @@
 const config = require('../../config');
 const SentryClient = require('@sentry/node');
-
+/**
+ * Remote Error Logging Service
+ * @protected
+ * @class
+ */
 class Sentry {
+    /**
+     * Initializes connection with remote error logging service.
+     * @constructor
+     * @memberof ErrorLogging
+     * @param {Object} options options
+     * @param {*} user What user is are you creating this error logging connection for? This way we know what user is getting the error.
+     */
     constructor(options = {}, user) {
         const {setup} = options;
         SentryClient.init({

@@ -6,7 +6,8 @@
     "dev": "./node_modules/.bin/nodemon src/redditor.js",
     "lint": "./node_modules/.bin/eslint src/**/*.js",
     "test": "cross-env NODE_ENV=test ./node_modules/.bin/mocha --exit",
-    "debug": "node --nolazy --inspect-brk=9229 src/redditor.js"
+    "debug": "node --nolazy --inspect-brk=9229 src/redditor.js",
+    "doc": "./node_modules/.bin/jsdoc -r src/ --configure .jsdoc.json --verbose"
   },
   "keywords": [],
   "author": "company_name",
@@ -21,6 +22,7 @@
     "fs": "^0.0.1-security",
     "http-status": "^1.5.2",
     "jimp": "^0.16.1",
+    "jsdoc": "^3.6.11",
     "mongoose": "^6.5.4",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.19",

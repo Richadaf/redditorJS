@@ -5,17 +5,25 @@ let { exec } = require('child_process');
 const exportPathVideo = config.exportPathVideo;
 const exportPathImage = config.exportPathImage;
 /**
- * Class that has the commands that runs the video editing
- * @see FFMPEG
+ * Class that has the commands that runs the video editing. @see Multimedia.FFMPEG
+ * @protected
+ * @class
  */
 //Written like this so the video processing runs on another process.
 class VideoBot {
-
+    /**
+     * @constructor
+     * @memberof Multimedia
+     * @param {Object} payload payload
+     */
     constructor(payload) {
         //TODO:Set  output url
     }
     /**
      * Gets currentProcess Uptime
+     * @public
+     * @function
+     * @memberof Multimedia
      * @returns {Object} An object with Uptime and last active
      */
     getProcessUptime() {
@@ -27,13 +35,16 @@ class VideoBot {
     }
     /**
      * This function does the command line work and sends the result to the parent Process to store
+     * @public
+     * @function
+     * @memberof Multimedia
      * @param {URL} image Image URL
      * @param {URL} audio AUDIO URL
      * @param {String} filename What do you want to name the video that it makes?
      * @returns void
      */
     makeVideoFromImage(payload) {
-        const { image, audio, filename, Throbber } = payload
+        const { image, audio, filename} = payload
         //Exec takes memory because it's buffering the data not streaming.
         //Also avoid exec if you're using user input to run the command line because of command injection attack
         //Cannot handle interactive shell so it'll hold if the file already exist.
@@ -47,10 +58,6 @@ class VideoBot {
                 return;
             }
             msg = { video: `${outputURL}`, uptime: this.getProcessUptime(), lastActive: Date.now() }
-            console.log('====================================');
-            console.log("THIS IS THROBBER", Throbber);
-            console.log('====================================');
-            Throbber.succeed('FINISHED MAKING SINGLE VIDEO :' + filename)
             process.send(msg)
             return;
         });
@@ -59,6 +66,9 @@ class VideoBot {
 
     /**
      * This function uses command line to merge multiple videos as a single video.
+     * @public
+     * @function
+     * @memberof Multimedia
      * @param {{videoURLs: [URL], filename: String}} payload 
      * @returns void
      */
@@ -75,13 +85,16 @@ class VideoBot {
 
     /**
     * Runs the CLI command to merge the videos. 
+    * @public
+    * @function
+    * @memberof Multimedia
     * @param {{videoURLs:[URL],filename: String}} payload 
     * @returns void
     */
     //Complexity here man n^2 already
     //most likely also use more memory than usual
     mergeVideos(payload) {
-        const { videoURLs, filename, Throbber } = payload;
+        const { videoURLs, filename } = payload;
         let command = 'ffmpeg '
         let inputFiles = '';
         let defaultExtension = '.mkv'
@@ -108,18 +121,14 @@ class VideoBot {
                 return;
             }
             msg = { finalVideo: `${exportPathVideo + filename}`, uptime: this.getProcessUptime(), lastActive: Date.now() }
-            Throbber.succeed('FINISHED MERGING VIDEO :' + filename)
+            // Throbber.succeed('FINISHED MERGING VIDEO :' + filename)
             process.send(msg)
             return;
         });
         return;
     }
 }
-/**
- * Handles messages that comes from the parent process.
- * @param {Object} message
- * @return {{video?:String, uptime?:String, lastActive?: Date}} Object containing data 
- */
+
 process.on('message', async (msg) => {
     if (msg.action && msg.action === 'joinAudioToImage') {
         return await joinAudioToImageHandler(msg);
@@ -129,17 +138,23 @@ process.on('message', async (msg) => {
 });
 /**
  * Joins Audio with still image to make a video that is the length of the audio
+ * @protected
+ * @function
+ * @memberof Multimedia
  * @param {{image:URL, audio:URL, filename:String}} msg 
  * @returns void
  */
 function joinAudioToImageHandler(msg) {
-    const { image, audio, filename, Throbber } = msg;
+    const { image, audio, filename } = msg;
     videoBot = new VideoBot(msg);
     videoBot.makeVideoFromImage(msg);
 }
 
 /**
  * Merges multiple videos to make one
+ * @protected
+ * @function
+ * @memberof Multimedia
  * @param {{videoURLs:[URL],filename: String}} msg payload
  * @returns void
  */

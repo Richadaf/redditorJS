@@ -4,7 +4,6 @@ const config = require('../../config')
 const express = require('express')
 const morgan = require('morgan')
 const bodyParser = require('body-parser')
-const errorHandler = require('../../middlewares/error-handler')
 const apiRouter = require('../../routes/api')
 const cookieParser = require('cookie-parser');
 const http = require('http');
@@ -97,8 +96,6 @@ app.use(function onError(err, req, res, next) {
 	res.statusCode = 500;
 	res.end(res.sentry + '\n');
 });
-// app.use(errorHandler.handleNotFound)
-// app.use(errorHandler.handleError)
 const server = http.createServer(app)
 exports.init = async () => {
 	server.listen(config.port, async (err) => {

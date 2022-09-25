@@ -1,11 +1,41 @@
 const Jimp = require('jimp')
 const Throbber = require('../../helpers/throbber')
-
+/**
+ * Helps us create an image
+ * @protected
+ * @class
+ */
 class Imager {
+    /**
+     * @private
+     * @member
+     * Image instance
+     */
     #image = null;
-    #imageWidth
-    #imageHeight
-    #backgroundColor
+    /**
+     * @private
+     * @member
+     * Image width
+     */
+    #imageWidth = 1080;
+    /**
+     * @private
+     * @member
+     */
+    #imageHeight = 1080;
+    /**
+     * @private
+     * @member
+     */
+    #backgroundColor = 'black';
+    /**
+     * Creates an image with set instructions 
+     * @constructor
+     * @memberof Multimedia
+     * @param {Number} width width
+     * @param {Number} height height
+     * @param {String} backgroundColor background color for the image.
+     */
     constructor(width, height, backgroundColor) {
         this.#image = new Jimp(width, height, backgroundColor, (err, image) => {
             if (err) throw err
@@ -16,6 +46,10 @@ class Imager {
     }
     /**
      * Writes text at the center of the image
+     * @public
+     * @async
+     * @function
+     * @memberof Multimedia
      * @param {String} text Text you want to write over the image
      * @returns {Object} image with text overlay
      */
@@ -41,6 +75,9 @@ class Imager {
     }
     /**
      * Get Current state of image
+     * @public
+     * @function
+     * @memberof Multimedia
      * @returns current state of image
      */
     getImage() {
@@ -49,10 +86,14 @@ class Imager {
 }
 
 module.exports = {
-    Imager: new Imager(1920, 1080, 'black'),
+    Imager: (width, height, color)=> {
+        return new Imager(width, height, color);
+    },
+    //TODO: Check jsdoc if @module use is correct here.
     /**
      * Save Image to file
      * @async
+     * @module
      * @param {Object} image Image instance you want to save to file
      * @param {String} name What do you want to name the file? No extensions
      * @param {String} path Where do you want it to save?
