@@ -1,3 +1,7 @@
+const Queue = require('bull');
+const CronManager = require('../cron/manager');
+const Helpers = require('../../../helpers')
+const FFMPEG = require('../../../services/utils/ffmpeg')
 /**
  * Home for anything Queue operations relating to multimedia
  * @protected
@@ -10,127 +14,238 @@ class MultimediaQueue {
      * @member
      */
     #classification = 'MULTIMEDIA'
-
+    /**
+     * External queue service we use
+     * @private
+     * @member
+     */
+    #queue = new Queue('REDDITOR-MULTIMEDIA-QUEUE', { redis: { port: 6379, host: "127.0.0.1" } }); // Specify Redis connection using object
     /**
      * Prepares MultimediaQueue
      * @constructor
      * @memberof Core
      */
-    constructor(){
+    constructor() {
     }
-    /** Runs a job with our multimedia Queue
+    /**
+     * Returns the multimedia queue
+     * @public
+     * @function
+     * @memberof Core
+     */
+    get() {
+        return this
+    }
+    /**
+    * Adds some task to back of the multimedia queue. The event listeners will handle what happens if task is successful or not
+    * @public
+    * @async
+    * @function
+    * @memberof Core
+    * @param {any} task queue task function
+    * @param {any} callback callback function
+    * @return {Promise<any>}
+    */
+    async addJob(job) {
+        return this.#queue.add({ name: 'REDDITOR-MULTIMEDIA-QUEUE', job });
+    }
+    async empty() {
+        return this.#queue.empty();
+    }
+    /** 
+     * Processes the task at the front of the multimedia queue. The event listeners will handle what happens if task is successful or not
      * @public
      * @async
      * @function
      * @memberof Core
-     * @param {{action: String, job: Function, options: Object}} payload payload
+     * @param {url: String, task: String} job job you want to add to queue, url is for redd
+     * @param {Object} callback callback
      */
-    async run(payload) {
-        //classification should always be "MULTIMEDIA"
-        let { classification, job, options } = payload
-        if (classification === 'MULTIMEDIA'){
-            //TODO: what do do I gotta do?
-            //Do job and pass data as argument
-            job(options)
-            this.#doStuff(data)
-        }
+    async run(job) {
+        await this.#queue.process(this.#mergeVideos(job))
     }
-    /**
-     * Displays critical information about the queue
-     * @public
-     * @function
-     * @memberof Core
-     * @returns {{statusRunning : {status: { process: {running: Boolean, completed: Boolean }}}, statusCompleted : {status: { process: {running: Boolean, completed: Boolean }}} , statusSuccess : {status: { process: {running: Boolean, completed: Boolean }}, results: { last_success_at: Date | undefined, last_fail_at: Date | undefined }}, statusFail: {status: { process: {running: Boolean, completed: Boolean }}, results: { last_success_at: Date | undefined, last_fail_at: Date | undefined }}}} 
-     */
-    info() {
-        return {
-            statusRunning: { status: { process: { running: true, completed: false } } },
-            statusCompleted: { status: { process: { running: false, completed: true } } },
-            statusSuccess: { status: { process: { running: false, completed: true } }, results: { last_success_at: new Date(), last_fail_at: null } },
-            statusFail: { status: { process: { running: false, completed: false } }, results: { last_success_at: null, last_fail_at: new Date() } }
-        }
+    async #mergeVideos(job) {
+        if (job.task == 'merge-video') {
+            console.log('====================================');
+            console.log("TOUCHED THIS");
+            console.log('====================================');
+            let taskSchedule = await CronManager.scheduleTaskForCron('MULTIMEDIA', Helpers.CronJob.generateCronExpression(job.every, job.when), async () => {
+                console.log('Richie You see,..... it never gebkgv shotk sfkhh');
+                if (!FFMPEG.isJoiningImageAndAudio() && FFMPEG.isReadyForMerge() && !FFMPEG.hasMergedVideos()) {
+                    console.log('====================================');
+                    console.log("RUNNING MERGE FUNC EVERY x t");
+                    console.log('====================================');
+                    //Merge video and disable MergeVideo from MultimediaCronJob's schedule 
+                    let videosToJoin = [];
+                    let commentsVideoPaths = fs.readdirSync(exportPathVideo);
+                    for (const path of commentsVideoPaths)
+                        videosToJoin.push('' + exportPathVideo + path);
+
+                    let url = job.url
+                    //SET name of file from reddit url. Max of 10 characters as filename
+                    let videoName = url.match(/([a-zA-Z]+(_[a-zA-Z]+)+)/)[0];
+                    let finalVideoName = videoName.length > defaultFileNameLength ? videoName.slice(0, defaultFileNameLength) : videoName;
+                    if (!FFMPEG.isWorking()) {
+                        FFMPEG.mergeVideos(videosToJoin, finalVideoName); //TODO: NEEDS PROMISE
+                        this.#checkMergeVideoComplete(3, 'm');
+                    }
+                    console.log("FINAL VIDEO", FFMPEG.getFinalVideo());
+
+                    //
+                } else if (FFMPEG.hasMergedVideos()) {
+                    //Stop checking if video has merged every x 
+                }
+            });
+            console.log("THIS IS THE TASKSCHEDULE", taskSchedule);
+        CronManager.startTask(taskSchedule)
     }
-    /**
-     * What happens when the Queue's job has an error?
-     * @public
-     * @function
-     * @memberof Core
-     * @param error Error from queue 
-     * @returns
-     */
-    onErrorListener(error) {
-        return {
+    //If job.task = 'merge-video', add merge video to cron
+    //Add check merge finished to cron every 3 minutes
+}
+//Seems flawed because of the recursive solution here..Too expensive rn
+/**
+ * Checks every 3 minutes if merge video has completed
+ * @private
+ * @function
+ * @memberof Core
+ * @param {Number} x every x, {@link CRON_TIME_PERIODS} where x is a number.
+ * @param {CRON_TIME_PERIODS} t time period
+ * @returns Void
+ */
+#checkMergeVideoComplete(x, t) {
+    let mergeFinishedChecker = CronManager.scheduleTaskForCron('MULTIMEDIA', {
+        cronExpression: Helpers.CronJob.generateCronExpression(x, t),
+        task: async () => {
+            console.log("CHECKING HAS SCHEDULED TASK");
+            if (FFMPEG.hasMergedVideos()) process.MultimediaQueue.mergeFinished = true;
         }
+    });
+    if (mergeFinishedChecker && FFMPEG.hasMergedVideos()) {
+        CronManager.unscheduleTask(mergeFinishedChecker)
+    } else {
+        this.#checkMergeVideoComplete()
     }
 
-    /**
-     * What happens when the Queue's job is active
-     * @public
-     * @function
-     * @memberof Core
-     * @param job queue job function
-     * @returns
-     */
-    onActiveListener(job) {
-        return {
-        }
+}
+/**
+ * Displays critical information about the queue
+ * @public
+ * @function
+ * @memberof Core
+ * @returns {{statusRunning : {status: { process: {running: Boolean, completed: Boolean }}}, statusCompleted : {status: { process: {running: Boolean, completed: Boolean }}} , statusSuccess : {status: { process: {running: Boolean, completed: Boolean }}, results: { last_success_at: Date | undefined, last_fail_at: Date | undefined }}, statusFail: {status: { process: {running: Boolean, completed: Boolean }}, results: { last_success_at: Date | undefined, last_fail_at: Date | undefined }}}} 
+ */
+info() {
+    return {
+        statusRunning: { status: { process: { running: true, completed: false } } },
+        statusCompleted: { status: { process: { running: false, completed: true } } },
+        statusSuccess: { status: { process: { running: false, completed: true } }, results: { last_success_at: new Date(), last_fail_at: null } },
+        statusFail: { status: { process: { running: false, completed: false } }, results: { last_success_at: null, last_fail_at: new Date() } }
     }
-    /**
-     * What happens when the Queue's job is stalled
-     * @public
-     * @function
-     * @memberof Core
-     * @param {any} job queue job function
-     * @returns
-     */
-    onStalledListener(job) {
-        return {
-        }
-    }
-    /**
-     * What happens when the Queue's job is making progress
-     * @public
-     * @function
-     * @memberof Core
-     * @param {any} job queue job function
-     * @param {any} progress queue progress
-     * @returns
-     */
-    onProgressListener(job, progress) {
-        // A job's progress was updated!
-        // if (progress === 100) {
-        //     self.setJob(job)
-        // }
-        return {
-        }
-    }
-    /**
-     * What happens when the Queue's job failed
-     * @public
-     * @function
-     * @memberof Core
-     * @param {any} job queue job function
-     * @param {any} err queue err
-     * @returns
-     */
-    onFailedListener(job, err) {
-        //Call some self.failJob(job) //Fail job you want to run when quemanager tells you your queue got its failed function called
-        return {
-        }
-    }
-    /**
-     * What happens when the Queue's job is removed
-     * @public
-     * @function
-     * @memberof Core
-     * @param {any} job queue job function
-     * @returns
-     */
-    onRemovedListener(job) {
-        //A job successfully removed...so do what now?
-        return {
-        }
-    }
+}
+/**
+ * What happens when the Queue's task has an error?
+ * @public
+ * @function
+ * @memberof Core
+ * @param task Error from queue 
+ * @returns
+ */
+setOnErrorListener() {
+    return this.#queue.on('error', (err) => {
+        //Do stuff
+        //TODO: LOG TO SENTRY THIS USER AND THE ERROR
+    });
+}
+/**
+ * What happens when the Queue's task is active
+ * @public
+ * @function
+ * @memberof Core
+ * @param task queue task function
+ * @returns
+ */
+onActiveListener() {
+    return this.#queue.on('active', () => {
+        //Do stuff
+    })
+}
+/**
+ * What happens when the Queue's task is stalled
+ * @public
+ * @function
+ * @memberof Core
+ * @param {any} task queue task function
+ * @returns
+ */
+onStalledListener() {
+    return this.#queue.on('active', () => {
+        //Do stuff
+    })
+}
+/**
+ * What happens when the Queue's task is making progress
+ * @public
+ * @function
+ * @memberof Core
+ * @param {any} task queue task function
+ * @param {any} progress queue progress
+ * @returns
+ */
+onProgressListener() {
+    // A task's progress was updated!
+    // if (progress === 100) {
+    //     self.setTask(task)
+    // }
+    return this.#queue.on('progress', (data) => {
+        //Do stuff
+    })
+}
+/**
+ * What happens when the Queue's task failed
+ * @public
+ * @function
+ * @memberof Core
+ * @param {any} task queue task function
+ * @param {any} err queue err
+ * @returns
+ */
+onFailedListener() {
+    //Call some self.failTask(task) //Fail task you want to run when quemanager tells you your queue got its failed function called
+    return this.#queue.on('failed', (data) => {
+        //Do stuff
+    })
+}
+/**
+ * What happens when the Queue's task is removed
+ * @public
+ * @function
+ * @memberof Core
+ * @param {any} task queue task function
+ * @returns
+ */
+onRemovedListener() {
+    //A task successfully removed...so do what now?
+    return this.#queue.on('removed', (data) => {
+        //Do stuff
+    })
+}
+/**
+ * What happens when the Queue's task is completed
+ * @public
+ * @function
+ * @memberof Core
+ * @param {any} task queue task function
+ * @returns
+ */
+onCompletedListener() {
+    console.log("TASK COMPLETED, but thsi is the task ", task);
+    console.log("TASK COMPLETED WITH RESULT ", result);
+    //A task successfully completed...so do what now?
+    //IF TASK IS 'MERGE_VIDEO'. Send a message to user that the video is ready and is at x.
+    return this.#queue.on('completed', (data) => {
+        //Do stuff
+    })
+}
 
     //checkFFMPEGFinishedMakingSingleVideo()
     //mege?

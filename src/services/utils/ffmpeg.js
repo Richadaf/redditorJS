@@ -1,5 +1,5 @@
 const { fork } = require('child_process');
-const Throbber = require('../../helpers/throbber')
+const Throbber = require('../../helpers').Throbber;
 /**
  * Helper class for interacting with FFMPEG that is working in a child process
  * @public
@@ -24,16 +24,43 @@ class FFMPEG {
      * @member
      */
     #finalVideo = false;
-    /** Stores count of ffmpeg processes that is currently running and hasn't finished. For example, when you tell {@link ffmpeg} to {@link ffmpeg.joinImageAndAudio}, It'll start joining a child process and processes will increase by one. When it is done, processes will reduce by 1. Other functions in ffmpeg may also affect processes' value.
+    /**
+     * If any function calls our  {@link joinImageAndAudio}, then #joiningImageAndAudioInProgress increases by 1. It decreases if the function fails or is successful.
      * @private
+     * @static
      * @member
-    */
-    #processes = 0
-
+     */
+    #joiningImageAndAudioInProgress = 0
     /**
      * @constructor
      * @memberof Multimedia
      */
+    /**
+     * Lets you know if FFMPEG has joined ImageToAudio yet
+     * @private
+     * @member
+     */
+    #joinedImageAndAudio = false
+    /**
+     * Lets you know if FFMPEG is ready to merge multiple videos as one video. It will be false if other FFMPEG that will affect merge result is currently running.
+     * @private
+     * @static
+     * @member
+     */
+    #readyToMerge = false
+    /**
+     * Lets you know if FFMPEG is currently merging multiple videos to form one
+     * @private
+     * @member
+     */
+    #mergingVideos = false
+    /**
+     * Lets you know if FFMPEG has merged multiple videos to form one
+     * @private
+     * @member
+     */
+    #mergedVideo = false
+    
     constructor() {
     }
     /**
@@ -47,22 +74,27 @@ class FFMPEG {
      * @returns {URL | Boolean} url to the finished product, or false if there's an error
      */
     joinImageAndAudio(image, audio, filename) {
+        const self = this
+        self.#readyToMerge = false;
         Throbber.init('MAKING SINGLE COMMENT VIDEO :', filename)
         try {
-            this.#processes += 1
-            const childProcess = fork('./src/services/media');
+            self.#joiningImageAndAudioInProgress += 1
+            const childProcess = fork('./src/services/multimedia');
             childProcess.uptime = 0;
             childProcess.lastActive = Date.now();
             childProcess.on('message', (message) => {
+                Throbber.init('About to Finish making single video')
                 if (message.uptime) {
                     childProcess.uptime = message.uptime;
                     childProcess.lastActive = message.lastActive;
                 }
-                this.#videoURL = message && message.video ? message.video : false
-                this.#processes -= 1
+                self.#videoURL = message && message.video ? message.video : false
+                self.#joiningImageAndAudioInProgress -= 1
+                self.#readyToMerge = true
+                self.#joinedImageAndAudio = true
                 Throbber.succeed('FINISHED MAKING SINGLE VIDEO :' + filename)
-                if (this.#videoURL !== false) this.#videoURLS.push(this.#videoURL);
-                return this.#videoURL;
+                if (self.#videoURL !== false) self.#videoURLS.push(self.#videoURL);
+                return self.#videoURL;
             });
             let msg = { action: 'joinAudioToImage', image: image, audio: audio, filename: filename, Throbber: Throbber }
             childProcess.send(msg)
@@ -72,7 +104,7 @@ class FFMPEG {
             console.log("MAJOR ERROR", err);
             console.log('====================================');
         }
-
+        if(self.#joinedImageAndAudio)Throbber.succeed('FINISHED MAKING SINGLE VIDEO :' + filename)
     }
     /**
      * Merges a bunch of videos together as one. 
@@ -81,34 +113,51 @@ class FFMPEG {
      * @param {[URL]} videos filepath to each video you want to merge
      * @param {URL} filename What do you want to name the file? (No Extensions)
      * @memberof Multimedia
-     * @returns {URL} url for final merged video
+     * @returns {Void} 
      */
     mergeVideos(videos, filename) {
-        Throbber.init('MERGING VIDEOS TO : ' + filename)
-        try {
-            this.#processes += 1
-            const childProcess = fork('./src/services/media');
-            childProcess.uptime = 0;
-            childProcess.lastActive = Date.now();
-            childProcess.on('message', (message) => {
-                if (message.uptime) {
-                    childProcess.uptime = message.uptime;
-                    childProcess.lastActive = message.lastActive;
-                }
-                this.#finalVideo = message && message.finalVideo ? message.finalVideo : false
-                this.#processes -= 1
-                Throbber.succeed('FINISHED MERGING VIDEOS :' + this.#finalVideo)
-                return this.#finalVideo;
-            });
-            let msg = { action: 'mergeVideos', videoURLs: videos, filename: filename, Throbber: Throbber }
-            childProcess.send(msg)
-        } catch (err) {
-            Throbber.fail('FAILED TO MERGE TO ' + filename)
-            console.log('====================================');
-            console.log("MAJOR ERROR", err);
-            console.log('====================================');
+        let self = this;
+        if (self.#readyToMerge) {
+            Throbber.init('MERGING VIDEOS TO : ' + filename)
+            try {
+                self.#mergingVideos = true
+                self.#mergedVideo = false
+                const childProcess = fork('./src/services/multimedia');
+                childProcess.uptime = 0;
+                childProcess.lastActive = Date.now();
+                childProcess.on('message', (message) => {
+                    if (message.uptime) {
+                        childProcess.uptime = message.uptime;
+                        childProcess.lastActive = message.lastActive;
+                    }
+                    self.#finalVideo = message && message.finalVideo ? message.finalVideo : false
+                    self.#readyToMerge = false;
+                    self.#mergedVideo = true
+                    Throbber.succeed('FINISHED MERGING VIDEOS :' + self.#finalVideo)
+                    return self.#finalVideo;
+                });
+                let msg = { action: 'mergeVideos', videoURLs: videos, filename: filename, Throbber: Throbber }
+                childProcess.send(msg)
+            } catch (err) {
+                Throbber.fail('FAILED TO MERGE TO ' + filename)
+                console.log('====================================');
+                console.log("MAJOR ERROR", err);
+                console.log('====================================');
+            }
+            if(this.hasMergedVideos())Throbber.succeed('FINISHED MERGING VIDEOS :' + self.#finalVideo)
         }
     }
+    /**
+     * Lets you know if FFMPEG has merged video
+     * @public
+     * @function
+     * @memberof Multimedia
+     * @returns {Boolean} true if merged, false otherwise
+     */
+    hasMergedVideos() {
+        return self.#mergedVideo;
+    }
+
     /**
      * Gets the url for the merged video
      * @public
@@ -119,16 +168,25 @@ class FFMPEG {
     getFinalVideo() {
         return this.#finalVideo;
     }
-
     /**
-     * Tells you if any FFMPEG function is running in the background.
+     * Lets you know if FFMPEG is currently working; Joining Image and Audio work.
      * @public
      * @function
      * @memberof Multimedia
-     * @returns 
+     * @returns {Boolean} true if over 0 images are joining with respective audio to make video
      */
-    isWorking() {
-        return this.#currentlyWorking;
+    isJoiningImageAndAudio() {
+        return this.#joiningImageAndAudioInProgress > 0
+    }
+    /**
+     * Lets you know if FFMPEG is ready to merge multiple videos to give one video. 
+     * @public
+     * @function
+     * @memberof Multimedia
+     * @returns {Boolean} true if ready, false otherwise
+     */
+    isReadyForMerge(){
+        return this.#readyToMerge
     }
 }
 

@@ -35,7 +35,7 @@
       "favicon": "PATH_TO_FAVICON_IMAGE",
       "homepageTitle": "Redditor Docs",
       "search": "false",
-      "footer": "Created with ❤️, Richard A. Famoroti",
+      "footer": "<div style=\"text-align:center\">Created with ❤️ ,  Richard A. Famoroti </div>",
       "menu": [
         {
           "title": "Github",

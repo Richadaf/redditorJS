@@ -1,12 +1,9 @@
 'use strict'
-const Queue = require('bull');
-const Throbber = require('../../../helpers/throbber')
+const Throbber = require('../../../helpers').Throbber;
 const multimediaQueue = require('./multimedia')
-const MULTIMEDIA_QUEUE = new Queue('REDDITOR-MULTIMEDIA-QUEUE', opts); // Specify Redis connection using object
-
 
 /**
- * We have services that want to run tasks/jobs one after the other. {@link QueueManager} organizes all tasks for all services into a queue library and attaches it to {@link process}.
+ * We have services that want to run jobs/jobs one after the other. {@link QueueManager} organizes all jobs for all services into a queue library and attaches it to {@link process}.
  * Very useful for managing first in first out activities throughout the system.
  * @protected
  * @class
@@ -40,41 +37,31 @@ class QueueManager {
      * @param {Object} opts 
      */
     constructor(opts) {
-        this.QUEUE_THROBBER = Throbber.start()
-        this.#build(opts)
-    }
-    /**
-     * Puts all queues together and attach it to process
-     * @private
-     * @async
-     * @function
-     * @memberof Core
-     * @param {Object} opts 
-     */
-    async #build(opts) {
+        this.QUEUE_THROBBER = Throbber.init()
+        // this.#build(opts)
         const queues = this.#getQueues()
         var functions = this.#getFunctions(opts)
         var constants = this.#getConstants()
         const queuesArray = Object.keys(queues)
 
         //build queueManager library and attach it to node process
-        await this.addAllListeners(queuesArray, queues)
+        this.addAllListeners(queuesArray, queues)
         const utils = Object.assign(queues, Object.assign(functions, constants))
         Object.assign(this, utils)
         process.REDDITOR_QUEUE = this
-        process.REDDITOR_QUEUE.QUEUES = await this.#getQueues()
+        process.REDDITOR_QUEUE.QUEUES = this.#getQueues()
+        this.QUEUE_THROBBER.succeed('REDDITOR-QUEUE Ready!')
     }
     /**
      * Returns all queues defined in the system. Defined by {{queue_name: Queue.Queue}, {queue_name: Queue.Queue},...}
      * @private
-     * @async
      * @function
      * @memberof Core
      * @return {Object.<String, Queue.Queue>} Object of queue name and our internal Queue as values.
      */
     #getQueues() {
         return {
-            MULTIMEDIA_QUEUE: MULTIMEDIA_QUEUE,
+            MULTIMEDIA_QUEUE: multimediaQueue.get(),
         };
     }
     /**
@@ -107,6 +94,19 @@ class QueueManager {
         };
     }
     /**
+     * Let's you know if Queue Manager is ready
+     * @public
+     * @function
+     * @memberof Core
+     * @returns {Boolean} true if has queue manager is ready and false otherwise.
+     */
+    init() {
+        //When a QueueManager has initialized, process.REDDITOR_QUEUE will exist.
+        if (!process.REDDITOR_QUEUE) return false
+        //process.NOTIFICATIONS_SOCKET.to().send(this.getQueueManager)
+        return true;
+    }
+    /**
      * Attaches all Queue's work functions (active, stalled, error) to internal system.
      * @public
      * @async
@@ -115,66 +115,48 @@ class QueueManager {
      * @param {[String]} queuesArray An array containing the names of all the queues you want to add 
      * @param {Object.<String, Queue.Queue>} queues object of queue name and our internal Queue as values. 
      */
-    async addAllListeners(queuesArray, queues) {
+    addAllListeners(queuesArray, queues) {
         const self = this
-        queuesArray.map(async q => {
-            queues[q].on('error', function (error) {
-                // An error occurred.
-                //SEND A NOTIFICATION
-                multimediaQueue.onErrorListener(error);
-
-            })
-
-            queues[q].on('active', async function (job) {
-                multimediaQueue.onActiveListener(job)
-            })
-
-            queues[q].on('stalled', function (job) {
-                // A job has been marked as stalled. This is useful for debugging job
-                // workers that crash or pause the event loop.
-                multimediaQueue.onStalledListener(job)
-            })
-
-            queues[q].on('progress', function (job, progress) {
-                multimediaQueue.onProgressListener(job, progress)
-            })
-
-            queues[q].on('failed', function (job, err) {
-                // A job failed with reason `err`!
-                multimediaQueue.onFailedListener(job, err)
-            })
-
-            queues[q].on('removed', function (job) {
-                // A job successfully removed.
-                multimediaQueue.onFailedListener(job)
-            });
+        queuesArray.map( q => {
+            queues[q].setOnErrorListener()
+            queues[q].onActiveListener()
+            queues[q].onStalledListener()
+            queues[q].onProgressListener()
+            queues[q].onFailedListener()
+            queues[q].onRemovedListener()
         })
     }
     /**
-     * Initializes Queue Manager
+     * Processes the first job in every queue that exist in the system
      * @public
+     * @async
      * @function
      * @memberof Core
+     * @param {[String]} queuesArray names of system queues. E.g. Multimedia, Billing, e.t.c.
+     * @param {Object} callback callback
      */
-    init() {
-        //process.NOTIFICATIONS_SOCKET.to().send(this.getQueueManager)
-        this.QUEUE_THROBBER.succeed('REDDITOR-QUEUE Ready!')
+    async runQueues(queuesArray, callback) {
+        const self = this;
+        const systemQueues = this.#getQueues();
+        queuesArray.map(async qName => {
+            systemQueues[qName].process(callback)
+        })
+
     }
     /**
-     * Returns Queues defined in the system, each containing their jobs
+     * Returns QueueManager as object of system queues, each containing their jobs
      * @private
      * @async
      * @function
      * @memberof Core
      * @returns {{jobs: Promise<[Object]>}} Queues defined in the system
      */
-    async #getQueueManager() {
+    async get() {
         const QUEUES = {
             MULTIMEDIA_QUEUE: { jobs: await process.REDDITOR_QUEUE['MULTIMEDIA_QUEUE'].getJobs() },
         }
         return QUEUES
     }
-    
     /**
      * Deletes a Queue from QueueManager's system
      * @public
@@ -185,63 +167,32 @@ class QueueManager {
      * @returns {Object} data
      */
     async deleteQueue(classification) {
-        const allJobs = await process.OKRA_QUEUE[classification].getJobs() // all jobs in queue
-        const done = await allJobs.filter(job => {
-            job.remove()
-
-            return job
-        })
-        if (done.length === 0) return { success: true, msg: 'Emptied the queue successfully!' }
-        //TODO:THROW ERRORS should go somwthing along these lines (errors come from src/helpers/errors):
-        // return errors.throw('empty_queue', queue)
-        return { success: false, msg: 'Queue is already empty!', data: classification }
+        await this.#getQueues()[classification + '_QUEUE'].empty();
     }
-    
     /**
-     * Processes (starts, i think...) a job for a queue
+     * Runs the first job of the system queue you passed in. Remember system queues are things like MultimediaQueue, BillingQueue and others.
      * @public
      * @async
      * @function
      * @memberof Core
-     * @param {String} classification queue classification (see {@link QueueClassification})
-     * @param {Function} job 
+     * @param {String} classification system queue classification (see {@link QueueClassification})
+     * @param {Function} callback optional callback
      */
-    async createJob(classification, job) { // process the job 
-        const self = this;
-        this.classification = classification.split('_')[0]
-        await process.REDDITOR_QUEUE[classification].process(async () => {
-            //Classifications for queue is like MULTIMEDIA, e.t.c. remember, that's where MULTIMEDIA_QUEUE came from.
-            return self.#processJobForQueueClassification(self.classification, job)
-        });
-
+    async runQueue(classification, job, callback) {
+        await this.#getQueues()[classification + '_QUEUE'].run(job, callback);
     }
-    
     /**
-     * Our QueueManager has multiple queues. E.g Multimedia queue, Billing queue, e.t.c. Multimedia and Billing in this example is the {@link QueueClassification}
-     * @typedef QueueClassification
-     * @type {{jobs: Promise<[Object]>}}
-     */
-    /**
-     * Remember our system can have multiple queues in QueueManager. Let's call these instances {@link QueueClassification}.
-     * this function uses the right queue out of the numerous queues in the system to run the job.
-     * @private
+     * Runs the first job of the system queue you passed in. Remember system queues are things like MultimediaQueue, BillingQueue and others.
+     * @public
+     * @async
      * @function
      * @memberof Core
-     * @param {String} classification Name of Queue Classification. E.g. 'Multimedia', 'Billing', 'Advertising'
-     * @param {Function} job job you want to run
-     * @param {Object} options any extra data/arguments you want to pass
-     * @returns 
+     * @param {String} classification system queue classification (see {@link QueueClassification})
+     * @param {Function} job what instructions/job do you want to add to queue?
+     * @param {Function} callback optional callback
      */
-    #processJobForQueueClassification(classification, job) { // run appropiate process for queue
-        switch (classification) {
-            case 'MULTIMEDIA':
-                return multimediaQueue.run({ classification, job })
-                break
-            default:
-                break
-        }
+    async addJobToQueue(classification, job){
+        await this.#getQueues()[classification + '_QUEUE'].addJob(job)
     }
-
 }
-
 module.exports = new QueueManager();

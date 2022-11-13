@@ -163,3 +163,4 @@ function mergeVideoHandler(msg) {
     videoBot = new VideoBot(msg);
     videoBot.mergeVideos({ videoURLs, filename });
 }
+

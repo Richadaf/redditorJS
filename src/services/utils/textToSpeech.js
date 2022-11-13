@@ -1,7 +1,7 @@
 const textToSpeech = require('@google-cloud/text-to-speech');
 const fs = require('fs');
 const util = require('util');
-const Throbber = require('../../helpers/throbber');
+const Throbber = require('../../helpers').Throbber;;
 /**
  * Text to Speech class
  * @protected
@@ -24,7 +24,7 @@ class TextToSpeech {
     }
     /**
      * Convert text to speech
-     * @public
+     * @w
      * @async
      * @function
      * @memberof MixedRealityTools

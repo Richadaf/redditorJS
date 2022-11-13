@@ -25,5 +25,12 @@ module.exports = {
     defaultFileNameLength: 16,
     defaultContentWidth: 1920,
     defaultContentHeight: 1080,
-    defaultContentColor: '1c1c1c'
+    defaultContentColor: '1c1c1c',
+    redis: {
+        db: process.env.REDIS_DB,
+        url: process.env.REDIS_URL,
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT,
+        password: process.env.REDIS_PASSWORD
+    },
 };

@@ -8,7 +8,7 @@ const apiRouter = require('../../routes/api')
 const cookieParser = require('cookie-parser');
 const http = require('http');
 const SentryIO = require('../../services/utils/sentry')
-const Throbber = require('../../helpers/throbber');
+const Throbber = require('../../helpers').Throbber;
 const Sentry = new SentryIO()
 const app = express()
 
@@ -96,6 +96,7 @@ app.use(function onError(err, req, res, next) {
 	res.statusCode = 500;
 	res.end(res.sentry + '\n');
 });
+
 const server = http.createServer(app)
 exports.init = async () => {
 	server.listen(config.port, async (err) => {

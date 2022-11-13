@@ -1,7 +1,7 @@
 const config = require('../../config')
 const request = require("request");
 const RedditMDParser = require('snuownd');
-const Throbber = require('../../helpers/throbber');
+const Throbber = require('../../helpers').Throbber;;
 /**
  * Simple Class to Interact with Reddit's JSON/API calls.
  * @protected
@@ -32,13 +32,13 @@ class RedditPost {
      * @function init
      * @param {URL} url reddit url to work with
      * @memberof RedditContent
-     * @returns {Promise<RedditPost> | Promise<Error>} updated instance to work with. Returns Error instance if error
+     * @returns {Promise<Object> | Promise<Object>} updated instance to work with. Returns Error instance if error
      */
     async init(url) {
         Throbber.init(`GRABBING POST AND COMMENTS FOR ` + url + `.`);
         let data = new Promise((resolve) => {
             request({ url: url, json: true, timeout: 2 * 60 * 1000 }, (err, res, body) => {
-                if (err) resolve(new Error(err));
+                if (err) resolve({err: err, status: false});
                 else {
                     body = typeof body === 'string' ? JSON.parse(body) : body;
                     //We need posts and comments to only contain information we need for this project's scope. 
@@ -50,7 +50,7 @@ class RedditPost {
                     }));
                     this.setHasInit(true);
                     Throbber.succeed(`GRABBED POST AND COMMENTS FOR ` + url);
-                    resolve(this)
+                    resolve({data: this, status: true})
                 }
             })
         });
