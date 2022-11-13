@@ -62,14 +62,14 @@ class MultimediaQueue {
      * @param {Object} callback callback
      */
     async run(job) {
-        await this.#queue.process(this.#mergeVideos(job))
+        this.#queue.process(this.#mergeVideos(job))
     }
     async #mergeVideos(job) {
         if (job.task == 'merge-video') {
             console.log('====================================');
             console.log("TOUCHED THIS");
             console.log('====================================');
-            let taskSchedule = await CronManager.scheduleTaskForCron('MULTIMEDIA', Helpers.CronJob.generateCronExpression(job.every, job.when), async () => {
+            let taskSchedule = await CronManager.scheduleTaskForCron('MULTIMEDIA', Helpers.CronJob.generateCronExpression(job.every, job.when), () => {
                 console.log('Richie You see,..... it never gebkgv shotk sfkhh');
                 if (!FFMPEG.isJoiningImageAndAudio() && FFMPEG.isReadyForMerge() && !FFMPEG.hasMergedVideos()) {
                     console.log('====================================');
@@ -96,7 +96,6 @@ class MultimediaQueue {
                     //Stop checking if video has merged every x 
                 }
             });
-            console.log("THIS IS THE TASKSCHEDULE", taskSchedule);
         CronManager.startTask(taskSchedule)
     }
     //If job.task = 'merge-video', add merge video to cron

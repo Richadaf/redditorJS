@@ -75,7 +75,7 @@ exports.getContent = async (req, res, next) => {
                 //CREATE QUEUE OF TASKS, PUT MERGE VIDEO IN IT
                 //SET CRON_JOB DEFAULT, EVERY 3 Minutes, Run run queue Of Tasks
                 const QueueManager = require('../services/core/queue/manager')
-                if (QueueManager.initialize()) {
+                if (QueueManager.init()) {
                     //Defines a task to merge video and has scheduled to try running every 3 minutes  
                     //When you add a task to queue and it runs, after it finishes, what do you want to do?
                     let agent = new class QueueAgent {
