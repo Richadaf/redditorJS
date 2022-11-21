@@ -118,6 +118,7 @@ class FFMPEG {
     mergeVideos(videos, filename) {
         let self = this;
         if (self.#readyToMerge) {
+            console.log('MERGING VIDEOS TO : ',filename)
             Throbber.init('MERGING VIDEOS TO : ' + filename)
             try {
                 self.#mergingVideos = true
@@ -133,6 +134,7 @@ class FFMPEG {
                     self.#finalVideo = message && message.finalVideo ? message.finalVideo : false
                     self.#readyToMerge = false;
                     self.#mergedVideo = true
+                    console.log("FINISHED MERGING VIDEOS : ", self.#finalVideo);
                     Throbber.succeed('FINISHED MERGING VIDEOS :' + self.#finalVideo)
                     return self.#finalVideo;
                 });

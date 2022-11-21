@@ -14,7 +14,7 @@ const defaultAudioExtension = config.defaultAudioExtension;
 const defaultImageExtension = config.defaultImageExtension;
 const Helpers = require('../helpers');
 const CronManager = require('../services/core/cron/manager');
-const { CRON_TIME_PERIODS } = require('../helpers/cronjob');
+const { generateCronExpression, CRON_TIME_PERIODS } = require('../helpers/cronjob');
 
 /**
  * Creates Video content out of a reddit URL
@@ -54,9 +54,9 @@ exports.getContent = async (req, res, next) => {
                 //Write comments on screen
                 const Imager = ImagerUtils.Imager(defaultContentWidth, defaultContentHeight, defaultContentColor);
                 let writtenOnPhoto = await Imager.write(comment.body)
-                let filenameImage = comment.author + defaultImageExtension
-                if (fs.existsSync(filenameImage)) filenameImage = comment.author + '_' + Helpers.generateRandomString(5) + defaultImageExtension
-                await SaveImage(writtenOnPhoto, filenameImage, exportPathImage);
+                let filenameImage = exportPathImage + comment.author + defaultImageExtension
+                if (fs.existsSync(exportPathImage + filenameImage)) filenameImage = comment.author + '_' + Helpers.generateRandomString(5) + defaultImageExtension
+                let x = await SaveImage(writtenOnPhoto, filenameImage, exportPathImage);
 
                 //Join (written comment on screen) and (voice saying audio)
                 let iNamedJoinedFile = comment.author + '_pre' + defaultVideoExtension
@@ -78,26 +78,9 @@ exports.getContent = async (req, res, next) => {
                 if (QueueManager.init()) {
                     //Defines a task to merge video and has scheduled to try running every 3 minutes  
                     //When you add a task to queue and it runs, after it finishes, what do you want to do?
-                    let agent = new class QueueAgent {
-                        #scheduledMergeVidTask;
-                        #scheduledCheckServerIfVideoMerged;
-                        //url, 5, CRON_TIME_PERIODS['MINUTE']
-                        runMergeVideoTask(url,x,t) {
-                            this.#scheduledMergeVidTask = scheduleMergeVideos(url, x, t),
-                                (scheduledTask) => { scheduledMergeVidTask = scheduledTask; }
-                            return this.#scheduledMergeVidTask.start();
-                        }
-                        //url, 3, CRON_TIME_PERIODS['MINUTE']
-                        runCheckIfVideoMerged(url, x , t){
-                            this.#scheduledCheckServerIfVideoMerged = scheduleCheckServerIfVideoMerged(url, x, t),
-                            (scheduledTask) => { scheduledCheckServerIfVideoMerged = scheduledTask; }
-                            
-                            return this.#scheduledCheckServerIfVideoMerged.start()
-                        }
-                    }();
-                    QueueManager.addJobToQueue('MULTIMEDIA',agent.runMergeVideoTask(url,5,CRON_TIME_PERIODS['MINUTE']))
-                    QueueManager.addJobToQueue('MULTIMEDIA',agent.runCheckIfVideoMerged(url,3,CRON_TIME_PERIODS['MINUTE']))
-
+                    await QueueManager.addJobToQueue('MULTIMEDIA', {task: 'merge-video', url: 'https://www.reddit.com/r/help/comments/uctfcz/why_do_some_reddit_post_show_hundreds_of_comments.json',every: 5, when:CRON_TIME_PERIODS['MINUTE']})
+                    CronManager.scheduleTaskForCron('MULTIMEDIA',generateCronExpression(3,CRON_TIME_PERIODS['MINUTE']),await QueueManager.runQueue('MULTIMEDIA',{task: 'merge-video', url: 'https://www.reddit.com/r/help/comments/uctfcz/why_do_some_reddit_post_show_hundreds_of_comments.json',every: 5, when:CRON_TIME_PERIODS['MINUTE']}))
+                
                 }
 
             }

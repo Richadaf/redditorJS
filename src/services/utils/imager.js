@@ -104,7 +104,6 @@ module.exports = {
      * @module
      * @param {Bitmap} image raw image data you want to use to save the file.
      * @param {String} name What do you want to name the file? No extensions
-     * @param {String} path Where do you want it to save?
      * @returns {Promise<Object>} ImageBuffer
      */
     Save: async (image, name, path) => {

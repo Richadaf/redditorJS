@@ -69,10 +69,6 @@ class MultimediaCronJob {
      * @returns {Promise<Void>}
      */
     async minuteCronTask() {
-        const newImage = require('../../utils/imager').Imager(1920,1080,"black");
-        const SaveImage = async (i, m, p) =>{ return await require('../../utils/imager').Save(i,m,p)}
-        const writtenTextOverImageAsData = await newImage.write("WOW I AM REALLY LOGGING EVERY MINUTE")
-        await SaveImage(writtenTextOverImageAsData,'check-this-love.png','.')
     }
     //TODO:returns jsdoc
     /**
