@@ -1,5 +1,5 @@
 const Jimp = require('jimp')
-const Throbber = require('../../helpers/throbber')
+const Throbber = require('../../helpers').Throbber;
 /**
  * Helps us create an image
  * @protected

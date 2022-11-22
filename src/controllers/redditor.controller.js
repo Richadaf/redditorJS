@@ -30,7 +30,7 @@ exports.getContent = async (req, res, next) => {
     try{
         await RedditPost.init(url);
     }catch(err){
-        console.err("CONNECTING TO REDDIT: " + err);
+        console.log("ERROR CONNECTING TO REDDIT: " + err);
     }
     let allComments = RedditPost.getComments();
     const DEFAULT_COMMENT_COUNT = allComments.length < defaultCommentCount ? allComments.length : defaultCommentCount;
@@ -46,7 +46,7 @@ exports.getContent = async (req, res, next) => {
         const Imager = ImagerUtils.Imager(defaultContentWidth, defaultContentHeight, defaultContentColor);
         let writtenOnPhoto = await Imager.write(comment.body)
         let filenameImage = comment.author + defaultImageExtension
-        if (fs.existsSync(filenameImage)) filenameImage = comment.author + '_' + Helpers.generateRandomString(5) + defaultImageExtension
+        if (fs.existsSync(exportPathImage + filenameImage)) filenameImage = comment.author + '_' + Helpers.generateRandomString(5) + defaultImageExtension
         await SaveImage(writtenOnPhoto, filenameImage, exportPathImage);
 
         //Join (written comment on screen) and (voice saying audio)
@@ -63,6 +63,6 @@ exports.getContent = async (req, res, next) => {
     //SET name of file from reddit url. Max of 10 characters as filename
     let videoName = url.match(/([a-zA-Z]+(_[a-zA-Z]+)+)/)[0]
     let finalVideoName = videoName.length > defaultFileNameLength ? videoName.slice(0, defaultFileNameLength) : videoName
-    if (!FFMPEG.isWorking()) FFMPEG.mergeVideos(videosToJoin, finalVideoName) //TODO: NEEDS PROMISE
+    // if (!FFMPEG.isWorking()) FFMPEG.mergeVideos(videosToJoin, finalVideoName) //TODO: NEEDS PROMISE
     console.log("FINAL VIDEO", FFMPEG.getFinalVideo());
 }

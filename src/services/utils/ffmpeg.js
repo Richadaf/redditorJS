@@ -1,5 +1,5 @@
 const { fork } = require('child_process');
-const Throbber = require('../../helpers/throbber')
+const Throbber = require('../../helpers/').Throbber;
 /**
  * Helper class for interacting with FFMPEG that is working in a child process
  * @public
@@ -118,17 +118,6 @@ class FFMPEG {
      */
     getFinalVideo() {
         return this.#finalVideo;
-    }
-
-    /**
-     * Tells you if any FFMPEG function is running in the background.
-     * @public
-     * @function
-     * @memberof Multimedia
-     * @returns 
-     */
-    isWorking() {
-        return this.#currentlyWorking;
     }
 }
 

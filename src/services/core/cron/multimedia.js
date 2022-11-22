@@ -1,3 +1,4 @@
+const {CRON_TIME_PERIODS, generateCronExpression} = require('../../../helpers').CronJob
 /**
  * Home for anything CRON operations relating to multimedia
  * @protected
@@ -16,7 +17,6 @@ class MultimediaCronJob {
      * @memberof Core
      */
     constructor(){
-
     }
     /**
      * The Scheduled task
@@ -28,12 +28,35 @@ class MultimediaCronJob {
     /**
      * Get Multimedia cron
      * @public
+     * @async
      * @function
      * @memberof Core
      * @returns {ScheduledTask} multimedia cron's schedule function.
      */
-    get() {
-        return this.#MmCron;
+    async get() {
+        return this;
+    }
+    /**
+     * Schedules a task to the cron effective immediately.
+     * @public
+     * @async
+     * @function
+     * @memberof Core
+     * @param {String} cronExpression cronExpression that works with node-cron. {@see {@link https://github.com/node-cron/node-cron/}}
+     * @param {Function} task task you want to perform
+     * @returns {ScheduledTask} scheduled task
+     */
+    async scheduleTask(cronExpression, task){
+        return this.#MmCron.schedule(cronExpression, task);
+    }
+    /**
+     * Unschedule a task from the multimedia cron. Every x, t ({@see {@link scheduleTask}), task will STOP running.
+     * @public
+     * @async
+     * @function
+     */
+    async unscheduleTask(){
+        console.log("I kNOw you  wanna unschedule  task buy look at this", this.#MmCron.getTasks());
     }
 
     //TODO:returns jsdoc
@@ -43,10 +66,9 @@ class MultimediaCronJob {
      * @async
      * @function
      * @memberof Core
-     * @returns 
+     * @returns {Promise<Void>}
      */
     async minuteCronTask() {
-
     }
     //TODO:returns jsdoc
     /**

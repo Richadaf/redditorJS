@@ -1,5 +1,6 @@
 const ora = require('ora');
 /**
+ * Helper class for anything that has to with console logging.
  * @protected
  * @class
  * @classdesc Custom Console Throbber
@@ -17,7 +18,7 @@ class Throbber {
      * @memberof Helper
      */
     constructor() {
-        this.#appStartThrobber = ora(); 
+        
     }
     /**
      * Initializes with a message of your choice
@@ -26,9 +27,22 @@ class Throbber {
      * @memberof Helper
      * @param {String | undefined} msg message you want to display
      */
-    init(msg){
-        //You should not be exposing ORA
-        let done = msg ? this.#appStartThrobber.start(msg) : this.#appStartThrobber.start();
+    init(msg) {
+        this.#appStartThrobber = ora();
+        this.#appStartThrobber.start(msg)
+        return this;
+    }
+    /**
+     * Initializes with a no message
+     * @public
+     * @function
+     * @memberof Helper
+     * @param {String | undefined} msg message you want to display
+     */
+    init(){
+        this.#appStartThrobber = ora();
+        this.#appStartThrobber.start()
+        return this;
     }
     /**
      * Displays a YES/SUCCESS message 
@@ -62,6 +76,25 @@ class Throbber {
     fail(msg) {
         this.#appStartThrobber.fail(msg)
     }
+    /**
+     * @typedef SystemThrobber
+     * @type {{succeed: Function<String>, fail: Function<String>, stop: Function<String>, warn: Function<String>}} throbber utils
+     */
+    /**
+     * A system throbber with it's functions
+     * @public
+     * @function
+     * @memberof Helper
+     * @return {SystemThrobber} throbber library
+     */
+    get() {
+        return {
+            succeed: (text) => { return this.#appStartThrobber.succeed(text) },
+            fail: (text) => { return this.#appStartThrobber.fail(text) },
+            stop: (text) => { return this.#appStartThrobber.stop(text) },
+            warn: (text) => { return this.#appStartThrobber.warn(text) },
+        }
+    }
 }
 
-module.exports = new Throbber();
+module.exports = Throbber;

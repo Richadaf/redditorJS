@@ -2,7 +2,7 @@
 
 const config = require('../../../config')
 const mongoose = require('mongoose')
-const Throbber = require('../../../helpers/throbber')
+const Throbber = require('../../../helpers').Throbber;
 const mongoThrobber = Throbber.init()
 
 mongoose.Promise = require('bluebird')

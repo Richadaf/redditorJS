@@ -1,7 +1,7 @@
 const config = require('../../config')
 const request = require("request");
 const RedditMDParser = require('snuownd');
-const Throbber = require('../../helpers/throbber');
+const Throbber = require('../../helpers').Throbber;;
 /**
  * Simple Class to Interact with Reddit's JSON/API calls.
  * @protected
