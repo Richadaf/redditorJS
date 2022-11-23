@@ -22,7 +22,7 @@ exports.CRON_TIME_PERIODS = {
  * 
  * This returns a cron expression signifying instruction: Every x t, where x is number and t is timeframe{m,s,h,d,y}"
  * @example
- * cronExpression(2,'m') //returns cron expression for every two minutes: '*\/2 * * * *'
+ * cronExpression(2,CRON_TIME_PERIODS['MINUTE']) //returns cron expression for every two minutes: '*\/2 * * * *'
  * @public
  * @function
  * @memberof Helper
@@ -32,9 +32,7 @@ exports.CRON_TIME_PERIODS = {
  */
 exports.generateCronExpression = (x, t) => {
     if (t === this.CRON_TIME_PERIODS['MINUTE']) {
-        //TODO: I changed this code to 1 sec for debugging purposes.
-        // return '*/' + x + ' * * * *'; Real code for minute
-        return x + '/* * * * *';
+        return '*/' + x + ' * * * *';
     } else if (t === this.CRON_TIME_PERIODS['DAY']) {
         return '*/* * ' + x + ' * *';
     }

@@ -13,7 +13,8 @@ const fs = require('fs');
 const defaultAudioExtension = config.defaultAudioExtension;
 const defaultImageExtension = config.defaultImageExtension;
 const Helpers = require('../helpers')
-const { CRON_TIME_PERIODS } = require('../helpers').CronJob;
+const CronManager = require('../services/core/cron/manager');
+const { CRON_TIME_PERIODS,generateCronExpression } = require('../helpers').CronJob;
 /**
  * Creates Video content out of a reddit URL
  * @protected
@@ -69,21 +70,10 @@ exports.getContent = async (req, res, next) => {
         if (QueueManager.init()) {
             //Defines a task to merge video and has scheduled to try running every 3 minutes  
             //When you add a task to queue and it runs, after it finishes, what do you want to do?
-            await QueueManager.addJobToQueue('MULTIMEDIA', {task: 'merge-video', url: 'https://www.reddit.com/r/help/comments/uctfcz/why_do_some_reddit_post_show_hundreds_of_comments.json',every: 5, when:CRON_TIME_PERIODS['MINUTE']})
-            CronManager.scheduleTaskForCron('MULTIMEDIA',generateCronExpression(3,CRON_TIME_PERIODS['MINUTE']),await QueueManager.runQueue('MULTIMEDIA',{task: 'merge-video', url: 'https://www.reddit.com/r/help/comments/uctfcz/why_do_some_reddit_post_show_hundreds_of_comments.json',every: 5, when:CRON_TIME_PERIODS['MINUTE']}))
+            await QueueManager.addJobToQueue('MULTIMEDIA', {task: 'merge-video', url: 'https://www.reddit.com/r/help/comments/uctfcz/why_do_some_reddit_post_show_hundreds_of_comments.json',every: 1, when:CRON_TIME_PERIODS['MINUTE']})
+            CronManager.scheduleTaskForCron('MULTIMEDIA',generateCronExpression(3,CRON_TIME_PERIODS['MINUTE']),await QueueManager.runQueue('MULTIMEDIA',{task: 'merge-video', url: 'https://www.reddit.com/r/help/comments/uctfcz/why_do_some_reddit_post_show_hundreds_of_comments.json',every: 1, when:CRON_TIME_PERIODS['MINUTE']}))
         
         }
 
     }
-    //While FFMPEG running processes > 0, wait
-    //If FFMPEG.processes > 0, schedule job to cron so it checks if FFMPEG.processes === 0 ? run function that will disable this cron job, then merge videos ...//then call the callback function(Read dirl and merge videos) that you pass to cron.   done.
-    let videosToJoin = [];
-    let commentsVideoPaths = fs.readdirSync(exportPathVideo);
-    for (const path of commentsVideoPaths) videosToJoin.push('' + exportPathVideo + path);
-
-    //SET name of file from reddit url. Max of 10 characters as filename
-    let videoName = url.match(/([a-zA-Z]+(_[a-zA-Z]+)+)/)[0]
-    let finalVideoName = videoName.length > defaultFileNameLength ? videoName.slice(0, defaultFileNameLength) : videoName
-    // if (!FFMPEG.isWorking()) FFMPEG.mergeVideos(videosToJoin, finalVideoName) //TODO: NEEDS PROMISE
-    console.log("FINAL VIDEO", FFMPEG.getFinalVideo());
 }

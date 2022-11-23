@@ -237,37 +237,6 @@ class CronManager {
     async stopTask(task) {
         return task.stop();
     }
-
-    //TODO: DELETE THESE COMMENTS
-    // /**
-    //  * Schedule task to one of our many system crons. {@see {@link Cron}}
-    //  * @public
-    //  * @async
-    //  * @function
-    //  * @memberof Core
-    //  * @param {String} cron_name name of system cron you want use to schedule your task. E.g Multimedia, Billing, e.t.c.
-    //  * @param {{cronExpression: String, task: Function}} cronExpression 
-    //  * @returns {ScheduledTask} Scheduled Task
-    //  */
-    // async scheduleTask(cron_name, payload) {
-    //     let { cronExpression, task } = payload
-    //     const cron_full_name = cron_name + '_CRON'
-    //     const systemCrons = await this.#getCrons()
-    //     systemCrons[cron_full_name].schedule(cronExpression, task)
-    // }
-    /**
-     * Unschedule a Task from our Cron system.
-     * It doesn't need to ask you what cron you want to use to exit the task. It already knows what cron the task is connected to and it'll proceed as supposed.
-     * @public
-     * @async
-     * @function
-     * @memberof Core
-     * @param {ScheduledTask} scheduledTask ScheduledTask instance you got when you scheduled the task
-     * @returns {ScheduledTask} updated ScheduledTask instance.
-     */
-    async unscheduleTask(scheduledTask) {
-        return scheduledTask.stop();
-    }
 }
 
 module.exports = new CronManager();
