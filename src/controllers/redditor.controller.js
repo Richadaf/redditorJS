@@ -70,8 +70,8 @@ exports.getContent = async (req, res, next) => {
         if (QueueManager.init()) {
             //Defines a task to merge video and has scheduled to try running every 3 minutes  
             //When you add a task to queue and it runs, after it finishes, what do you want to do?
-            await QueueManager.addJobToQueue('MULTIMEDIA', {task: 'merge-video', url: 'https://www.reddit.com/r/help/comments/uctfcz/why_do_some_reddit_post_show_hundreds_of_comments.json',every: 5, when:CRON_TIME_PERIODS['MINUTE']})
-            CronManager.scheduleTaskForCron('MULTIMEDIA',generateCronExpression(3,CRON_TIME_PERIODS['MINUTE']),await QueueManager.runQueue('MULTIMEDIA',{task: 'merge-video', url: 'https://www.reddit.com/r/help/comments/uctfcz/why_do_some_reddit_post_show_hundreds_of_comments.json',every: 5, when:CRON_TIME_PERIODS['MINUTE']}))
+            await QueueManager.addJobToQueue('MULTIMEDIA', {task: 'merge-video', url: 'https://www.reddit.com/r/help/comments/uctfcz/why_do_some_reddit_post_show_hundreds_of_comments.json',every: 1, when:CRON_TIME_PERIODS['MINUTE']})
+            CronManager.scheduleTaskForCron('MULTIMEDIA',generateCronExpression(3,CRON_TIME_PERIODS['MINUTE']),await QueueManager.runQueue('MULTIMEDIA',{task: 'merge-video', url: 'https://www.reddit.com/r/help/comments/uctfcz/why_do_some_reddit_post_show_hundreds_of_comments.json',every: 1, when:CRON_TIME_PERIODS['MINUTE']}))
         
         }
 

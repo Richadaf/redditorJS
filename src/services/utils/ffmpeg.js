@@ -147,6 +147,7 @@ class FFMPEG {
             if(this.hasMergedVideos())Throbber.succeed('FINISHED MERGING VIDEOS :' + self.#finalVideo)
         }
     }
+    //TODO:Delete because not using
     /**
      * Lets you know if FFMPEG has merged video
      * @public
@@ -168,6 +169,7 @@ class FFMPEG {
     getFinalVideo() {
         return this.#finalVideo;
     }
+    //TODO:Delete because not using
     /**
      * Lets you know if FFMPEG is currently working; Joining Image and Audio work.
      * @public
@@ -178,6 +180,7 @@ class FFMPEG {
     isJoiningImageAndAudio() {
         return this.#joiningImageAndAudioInProgress > 0
     }
+    //TODO:Delete because not using
     /**
      * Lets you know if FFMPEG is ready to merge multiple videos to give one video. 
      * @public

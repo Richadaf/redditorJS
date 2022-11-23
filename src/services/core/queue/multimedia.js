@@ -5,6 +5,7 @@ const FFMPEG = require('../../../services/utils/ffmpeg')
 const fs = require('fs');
 const config = require('../../../config')
 const exportPathVideo = config.exportPathVideo;
+const defaultFileNameLength = config.defaultFileNameLength
 /**
  * Home for anything Queue operations relating to multimedia
  * @protected
@@ -69,21 +70,18 @@ class MultimediaQueue {
     }
     async #mergeVideos(job) {
         if (job.task == 'merge-video') {
-            if (!FFMPEG.isJoiningImageAndAudio() && FFMPEG.isReadyForMerge() && !FFMPEG.hasMergedVideos()) {
-                let videosToJoin = [];
-                let commentsVideoPaths = fs.readdirSync(exportPathVideo);
-                for (const path of commentsVideoPaths)
-                    videosToJoin.push('' + exportPathVideo + path);
+            let videosToJoin = [];
+            let commentsVideoPaths = fs.readdirSync(exportPathVideo);
+            for (const path of commentsVideoPaths)
+                videosToJoin.push('' + exportPathVideo + path);
 
-                let url = job.url
-                //SET name of file from reddit url. Max of 10 characters as filename
-                let videoName = url.match(/([a-zA-Z]+(_[a-zA-Z]+)+)/)[0];
-                let finalVideoName = videoName.length > defaultFileNameLength ? videoName.slice(0, defaultFileNameLength) : videoName;
+            let url = job.url
+            //SET name of file from reddit url. Max of 10 characters as filename
+            let videoName = url.match(/([a-zA-Z]+(_[a-zA-Z]+)+)/)[0];
+            let finalVideoName = videoName.length > defaultFileNameLength ? videoName.slice(0, defaultFileNameLength) : videoName;
 
 
-                FFMPEG.mergeVideos(videosToJoin, finalVideoName); //TODO: NEEDS PROMISE
-                console.log("FINAL VIDEO", FFMPEG.getFinalVideo());
-            }
+            FFMPEG.mergeVideos(videosToJoin, finalVideoName); //TODO: NEEDS PROMISE
         }
     }
     /**

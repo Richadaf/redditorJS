@@ -32,9 +32,7 @@ exports.CRON_TIME_PERIODS = {
  */
 exports.generateCronExpression = (x, t) => {
     if (t === this.CRON_TIME_PERIODS['MINUTE']) {
-        //TODO: I changed this code to 1 sec for debugging purposes.
-        // return '*/' + x + ' * * * *'; Real code for minute
-        return x + '/* * * * *';
+        return '*/' + x + ' * * * *';
     } else if (t === this.CRON_TIME_PERIODS['DAY']) {
         return '*/* * ' + x + ' * *';
     }
