@@ -155,7 +155,7 @@ class FFMPEG {
      * @returns {Boolean} true if merged, false otherwise
      */
     hasMergedVideos() {
-        return self.#mergedVideo;
+        return this.#mergedVideo;
     }
 
     /**
