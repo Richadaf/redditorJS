@@ -5,6 +5,8 @@
 - Install NodeJS, MongoDB
 - Install `npm` or `yarn`
 - Clone this repo
+- Create a directory called `output` at repo root
+- Create 3 subdirectories inside `output` called `videos`, `audio`,`images`.
 - Run `npm install` or `yarn` to install all dependencies.
 - Reach out to either `@richadaf` or Slack channel for a `.env` file.
 - Rename the `.env.example` file you just received to `.env`
@@ -20,7 +22,42 @@
 ## Files Structure
 
 ```
-
+.
+├── README.md
+├── package.json
+└── src
+    ├── config
+    │   └── index.js
+    ├── controllers
+    │   └── redditor.controller.js
+    ├── helpers
+    │   ├── cronjob.js
+    │   ├── index.js
+    │   ├── jsdoc.js
+    │   └── throbber.js
+    ├── redditor.js
+    ├── routes
+    │   └── api
+    │       └── index.js
+    └── services
+        ├── core
+        │   ├── cron
+        │   │   ├── manager.js
+        │   │   └── multimedia.js
+        │   ├── db
+        │   │   └── mongoose.js
+        │   ├── express.js
+        │   └── queue
+        │       ├── manager.js
+        │       └── multimedia.js
+        ├── multimedia
+        │   └── index.js
+        └── utils
+            ├── ffmpeg.js
+            ├── imager.js
+            ├── reddit.js
+            ├── sentry.js
+            └── textToSpeech.**js**
 ```
 As a contributor, the main files you will be working with are in `src`
 
