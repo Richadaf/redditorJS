@@ -1,5 +1,5 @@
 # Redditor API
-
+Creates videos off a reddit post
 ## Installation
 
 - Install NodeJS, MongoDB
