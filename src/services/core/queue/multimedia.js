@@ -6,6 +6,7 @@ const fs = require('fs');
 const config = require('../../../config')
 const exportPathVideo = config.exportPathVideo;
 const defaultFileNameLength = config.defaultFileNameLength
+const redis = config.redis
 /**
  * Home for anything Queue operations relating to multimedia
  * @protected
@@ -23,7 +24,7 @@ class MultimediaQueue {
      * @private
      * @member
      */
-    #queue = new Queue('REDDITOR-MULTIMEDIA-QUEUE', { redis: { port: 6379, host: "127.0.0.1" } }); // Specify Redis connection using object
+    #queue = new Queue('REDDITOR-MULTIMEDIA-QUEUE', { redis: { port: redis.port, host: redis.host } }); // Specify Redis connection using object
     /**
      * Prepares MultimediaQueue
      * @constructor

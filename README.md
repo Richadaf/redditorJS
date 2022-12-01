@@ -7,6 +7,7 @@ Creates videos off a reddit post
 - Clone this repo
 - Create a directory called `output` at repo root
 - Create 3 subdirectories inside `output` called `videos`, `audio`,`images`.
+- On a separate command line interface, run `redis-server`
 - Run `npm install` or `yarn` to install all dependencies.
 - Reach out to either `@richadaf` or Slack channel for a `.env` file.
 - Rename the `.env.example` file you just received to `.env`

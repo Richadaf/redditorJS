@@ -25,5 +25,9 @@ module.exports = {
     defaultFileNameLength: 16,
     defaultContentWidth: 1920,
     defaultContentHeight: 1080,
-    defaultContentColor: '1c1c1c'
+    defaultContentColor: '1c1c1c',
+    redis:{
+        port: 6379,
+        host: "127.0.0.1"
+    }
 };
